@@ -1,0 +1,8 @@
+- name: Install microk8s
+  snap:
+    name: microk8s
+    classic: yes
+    channel: "{{ microk8s_version }}"
+
+- name: Enable microk8s dns, ingress, storage and helm3 addons
+  shell: microk8s.enable dns ingress storage helm3

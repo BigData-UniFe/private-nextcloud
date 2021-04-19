@@ -1,0 +1,44 @@
+- name: Prune everything (including non-dangling images)
+  become: no
+  community.docker.docker_prune:
+    containers: yes
+    images: yes
+    images_filters:
+      dangling: false
+    networks: yes
+    volumes: yes
+    builder_cache: yes
+
+- name: Delete apt signing key for Docker
+  apt_key:
+    id: 9DC858229FC7DD38854AE2D88D81803C0EBFCD88
+    state: absent
+
+- name: Delete apt repository for Docker
+  apt_repository:
+    repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu xenial stable
+    state: absent
+
+- name: Unistall Docker and its dependencies
+  apt:
+    name:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+    state: absent
+    purge: yes
+    autoremove: yes
+
+- name: Delete docker0 network
+  command: ip link delete docker0
+  register: delete_docker
+  failed_when:
+    - delete_docker.rc != 0
+    - '''Cannot find device "docker0"'' not in delete_docker.stderr'
+  changed_when:
+    - delete_docker.rc == 0
+
+- name: Uninstall Docker Compose
+  file:
+    path: /usr/local/bin/docker-compose
+    state: absent

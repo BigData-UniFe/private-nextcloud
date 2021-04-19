@@ -1,0 +1,66 @@
+- name: Add Kubernetes Dashboard Helm repo
+  community.kubernetes.helm_repository:
+    binary_path: /snap/bin/microk8s.helm3
+    name: kubernetes-dashboard
+    repo_url: https://kubernetes.github.io/dashboard/
+
+- name: Deploy Kubernetes Dashboard
+  community.kubernetes.helm:
+    binary_path: /snap/bin/microk8s.helm3
+    name: kubernetes-dashboard
+    chart_ref: kubernetes-dashboard/kubernetes-dashboard
+    values: "{{ lookup('files', 'kubernetes-dashboard-values.yaml') | from_yaml }}"
+
+- name: Add Cluster Role Bindings for Kubernetes Dashboard
+  community.kubernetes.k8s:
+    definition: "{{ lookup('file', 'kubernetes-dashboard-cluster-role-binding.yaml') | from_yaml }}"
+
+- name: Add dashboard.local to local /etc/hosts
+  local_action:
+    module: lineinfile
+    dest: /etc/hosts
+    line: "{{ ansible_host }} dashboard.local"
+
+- name: Add Cert Manager Helm repo
+  community.kubernetes.helm_repository:
+    binary_path: /snap/bin/microk8s.helm3
+    name: jetstack
+    repo_url: https://charts.jetstack.io
+
+- name: Deploy Cert Manager
+  community.kubernetes.helm:
+    binary_path: /snap/bin/microk8s.helm3
+    name: cert-manager
+    chart_ref: jetstack/cert-manager
+    chart_version: "{{ cert_manager_version }}"
+    values: "{{ lookup('files', 'kubernetes-dashboard-values.yaml') | from_yaml }}"
+
+- name: Deploy Cert Manager Cluster Issuer
+  community.kubernetes.k8s:
+    definition: "{{ lookup('file', 'cluster-issuer.yaml') | from_yaml }}"
+
+- name: Add Bitnami Helm repo
+  community.kubernetes.helm_repository:
+    binary_path: /snap/bin/microk8s.helm3
+    name: bitnami
+    repo_url: https://charts.bitnami.com/bitnami
+
+- name: Deploy MariaDB
+  community.kubernetes.helm:
+    binary_path: /snap/bin/microk8s.helm3
+    name: mariadb
+    chart_ref: bitnami/mariadb
+    values: "{{ lookup('files', 'mariadb-values.yaml') | from_yaml }}"
+
+- name: Add Nexctloud Helm repo
+  community.kubernetes.helm_repository:
+    binary_path: /snap/bin/microk8s.helm3
+    name: nextcloud
+    repo_url: https://nextcloud.github.io/helm/
+
+- name: Deploy Nextcloud
+  community.kubernetes.helm:
+    binary_path: /snap/bin/microk8s.helm3
+    name: nextcloud
+    chart_ref: nextcloud/nextcloud
+    values: "{{ lookup('files', 'nextcloud-values.yaml') | from_yaml }}"

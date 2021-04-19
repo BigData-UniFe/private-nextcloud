@@ -1,0 +1,17 @@
+- hosts: nodes
+  become: yes
+  tags:
+    - never
+    - docker
+  roles:
+    - docker/install
+    - docker/deploy
+
+- hosts: nodes
+  become: yes
+  tags:
+    - never
+    - microk8s
+  roles:
+    - microk8s/install
+    - microk8s/deploy

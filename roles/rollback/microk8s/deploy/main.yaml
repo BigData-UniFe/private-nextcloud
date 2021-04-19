@@ -1,0 +1,79 @@
+- name: Undeploy Nextcloud
+  community.kubernetes.helm:
+    binary_path: /snap/bin/microk8s.helm3
+    name: nextcloud
+    state: absent
+
+- name: Remove Nexctloud Helm repo
+  community.kubernetes.helm_repository:
+    binary_path: /snap/bin/microk8s.helm3
+    name: nextcloud
+    state: absent
+
+- name: Undeploy MariaDB
+  community.kubernetes.helm:
+    binary_path: /snap/bin/microk8s.helm3
+    name: mariadb
+    state: absent
+
+- name: Remove Bitnami Helm repo
+  community.kubernetes.helm_repository:
+    binary_path: /snap/bin/microk8s.helm3
+    name: bitnami
+    state: absent
+
+- name: Undeploy Cert Manager Cluster Issuer
+  community.kubernetes.k8s:
+    name: letsencrypt
+    kind: clusterissuer
+    state: absent
+
+- name: Undeploy Cert Manager
+  community.kubernetes.helm:
+    binary_path: /snap/bin/microk8s.helm3
+    name: cert-manager
+    state: absent
+
+- name: Remove Cert Manager Helm repo
+  community.kubernetes.helm_repository:
+    binary_path: /snap/bin/microk8s.helm3
+    name: jetstack
+    state: absent
+
+- name: Download Cert Manager CRDs manifest
+  get_url:
+    url: "https://github.com/jetstack/cert-manager/releases/download/{{ cert_manager_version }}/cert-manager.crds.yaml"
+    dest: /tmp/cert-manager.crds.yaml
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: "0664"
+
+- name: Remove Cert Manager CRDs
+  community.kubernetes.k8s:
+    src: /tmp/cert-manager.crds.yaml
+    state: absent
+
+- name: Remove dashboard.local from local /etc/hosts
+  local_action:
+    module: lineinfile
+    dest: /etc/hosts
+    regexp: "{{ ansible_host }} dashboard.local"
+    state: absent
+
+- name: Remove Cluster Role Bindings for Kubernetes Dashboard
+  community.kubernetes.k8s:
+    name: kubernetes-dashboard
+    kind: clusterrolebindings
+    state: absent
+
+- name: Undeploy Kubernetes Dashboard
+  community.kubernetes.helm:
+    binary_path: /snap/bin/microk8s.helm3
+    name: kubernetes-dashboard
+    state: absent
+
+- name: Remove Kubernetes Dashboard Helm repo
+  community.kubernetes.helm_repository:
+    binary_path: /snap/bin/microk8s.helm3
+    name: kubernetes-dashboard
+    state: absent

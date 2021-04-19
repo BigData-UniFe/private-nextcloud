@@ -1,0 +1,7 @@
+ansible_ssh_private_key_file: ~/.ssh/id_ed25519
+# ansible_ssh_pass: enter_ssh_pass
+microk8s_version: 1.21/stable
+cert_manager_version: v1.3.0
+nextcloud_host: fiav1.myddns.me
+nextcloud_user: fiav1
+nextcloud_password: password
