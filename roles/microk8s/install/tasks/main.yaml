@@ -5,4 +5,16 @@
     channel: "{{ microk8s_version }}"
 
 - name: Enable microk8s dns, ingress, storage and helm3 addons
+  become: no
   shell: microk8s.enable dns ingress storage helm3
+
+- name: Install openshift python module
+  become: no
+  pip:
+    name: openshift
+
+- name: Install helm diff to improve idempotency check
+  become: no
+  community.kubernetes.helm_plugin:
+    binary_path: /snap/bin/microk8s.helm3
+    plugin_path: https://github.com/databus23/helm-diff

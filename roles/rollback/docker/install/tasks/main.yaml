@@ -19,6 +19,18 @@
     repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu xenial stable
     state: absent
 
+- name: Uninstall Docker Python client
+  become: no
+  pip:
+    name: docker
+    state: absent
+
+- name: Uninstall Docker Compose Python client
+  become: no
+  pip:
+    name: docker-compose
+    state: absent
+
 - name: Unistall Docker and its dependencies
   apt:
     name:

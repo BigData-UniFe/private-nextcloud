@@ -1,0 +1,7 @@
+ingress:
+  enabled: true
+  hosts:
+    - dashboard.local
+
+extraArgs:
+  - --enable-skip-login

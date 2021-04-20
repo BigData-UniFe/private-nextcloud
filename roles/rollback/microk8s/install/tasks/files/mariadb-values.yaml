@@ -1,0 +1,4 @@
+auth:
+  database: nextcloud
+  username: nextcloud
+  password: nextcloud

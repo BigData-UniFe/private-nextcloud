@@ -22,7 +22,7 @@ ingress:
   annotations:
     nginx.ingress.kubernetes.io/proxy-body-size: 4G
     kubernetes.io/tls-acme: "true"
-    cert-manager.io/cluster-issuer: letsencrypt-production
+    cert-manager.io/cluster-issuer: letsencrypt
     acme.cert-manager.io/http01-edit-in-place: "true"
     nginx.ingress.kubernetes.io/server-snippet: |-
       server_tokens off;

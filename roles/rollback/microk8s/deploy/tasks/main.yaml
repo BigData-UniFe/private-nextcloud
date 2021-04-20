@@ -1,56 +1,60 @@
 - name: Undeploy Nextcloud
+  become: no
   community.kubernetes.helm:
     binary_path: /snap/bin/microk8s.helm3
     name: nextcloud
+    namespace: default
     state: absent
 
 - name: Remove Nexctloud Helm repo
+  become: no
   community.kubernetes.helm_repository:
     binary_path: /snap/bin/microk8s.helm3
     name: nextcloud
     state: absent
 
 - name: Undeploy MariaDB
+  become: no
   community.kubernetes.helm:
     binary_path: /snap/bin/microk8s.helm3
     name: mariadb
+    namespace: default
     state: absent
 
 - name: Remove Bitnami Helm repo
+  become: no
   community.kubernetes.helm_repository:
     binary_path: /snap/bin/microk8s.helm3
     name: bitnami
     state: absent
 
 - name: Undeploy Cert Manager Cluster Issuer
-  community.kubernetes.k8s:
-    name: letsencrypt
-    kind: clusterissuer
+  become: no
+  shell: microk8s.kubectl delete clusterissuer letsencrypt
+
+- name: Remove Cert Manager Cluster Issuer
+  become: no
+  file:
+    path: "/home/{{ ansible_user }}/cluster-issuer.yaml"
     state: absent
 
+- name: Delete Cert Manager CRDs
+  become: no
+  shell: "microk8s.kubectl delete -f https://github.com/jetstack/cert-manager/releases/download/{{ cert_manager_version }}/cert-manager.crds.yaml"
+
 - name: Undeploy Cert Manager
+  become: no
   community.kubernetes.helm:
     binary_path: /snap/bin/microk8s.helm3
     name: cert-manager
+    namespace: default
     state: absent
 
 - name: Remove Cert Manager Helm repo
+  become: no
   community.kubernetes.helm_repository:
     binary_path: /snap/bin/microk8s.helm3
     name: jetstack
-    state: absent
-
-- name: Download Cert Manager CRDs manifest
-  get_url:
-    url: "https://github.com/jetstack/cert-manager/releases/download/{{ cert_manager_version }}/cert-manager.crds.yaml"
-    dest: /tmp/cert-manager.crds.yaml
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
-    mode: "0664"
-
-- name: Remove Cert Manager CRDs
-  community.kubernetes.k8s:
-    src: /tmp/cert-manager.crds.yaml
     state: absent
 
 - name: Remove dashboard.local from local /etc/hosts
@@ -61,18 +65,19 @@
     state: absent
 
 - name: Remove Cluster Role Bindings for Kubernetes Dashboard
-  community.kubernetes.k8s:
-    name: kubernetes-dashboard
-    kind: clusterrolebindings
-    state: absent
+  become: no
+  shell: microk8s.kubectl delete clusterrolebindings kubernetes-dashboard
 
 - name: Undeploy Kubernetes Dashboard
+  become: no
   community.kubernetes.helm:
     binary_path: /snap/bin/microk8s.helm3
     name: kubernetes-dashboard
+    namespace: default
     state: absent
 
 - name: Remove Kubernetes Dashboard Helm repo
+  become: no
   community.kubernetes.helm_repository:
     binary_path: /snap/bin/microk8s.helm3
     name: kubernetes-dashboard

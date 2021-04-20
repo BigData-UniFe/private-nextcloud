@@ -1,0 +1,17 @@
+- name: Uninstall helm diff to improve idempotency check
+  become: no
+  community.kubernetes.helm_plugin:
+    binary_path: /snap/bin/microk8s.helm3
+    plugin_name: diff
+    state: absent
+
+- name: Uninstall openshift python module
+  become: no
+  pip:
+    name: openshift
+    state: absent
+
+- name: Uninstall microk8s
+  snap:
+    name: microk8s
+    state: absent

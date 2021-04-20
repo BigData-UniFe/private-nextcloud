@@ -1,0 +1,10 @@
+- name: Down docker-compose.yaml
+  become: no
+  community.docker.docker_compose:
+    project_src: "/home/{{ ansible_user }}/nextcloud"
+    stopped: yes
+
+- name: Remove nextcloud project directory
+  file:
+    path: "/home/{{ ansible_user }}/nextcloud"
+    state: absent

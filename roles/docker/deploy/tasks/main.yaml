@@ -1,3 +1,28 @@
+- name: Create Docker Compose project directory
+  file:
+    path: "/home/{{ ansible_user }}/nextcloud"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: 0664
+    state: directory
+
+- name: Copy Docker Compose file and configuration files to remote node
+  template:
+    src: docker-compose.yaml
+    dest: "/home/{{ ansible_user }}/nextcloud/docker-compose.yaml"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: 0664
+
+- name: Copy nginx configuration file
+  copy:
+    src: uploadsize.conf
+    dest: "/home/{{ ansible_user }}/nextcloud/uploadsize.conf"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: 0664
+
 - name: Up docker-compose.yaml
+  become: no
   community.docker.docker_compose:
-    project_src: nextcloud
+    project_src: "/home/{{ ansible_user }}/nextcloud"

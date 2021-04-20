@@ -1,0 +1,12 @@
+- name: Install Docker prerequisites
+  apt:
+    name:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - gnupg
+      - lsb-release
+      - python3-pip
+    state: absent
+    purge: yes
+    autoremove: yes

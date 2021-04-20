@@ -1,19 +1,31 @@
 - name: Add Kubernetes Dashboard Helm repo
+  become: no
   community.kubernetes.helm_repository:
     binary_path: /snap/bin/microk8s.helm3
     name: kubernetes-dashboard
     repo_url: https://kubernetes.github.io/dashboard/
 
 - name: Deploy Kubernetes Dashboard
+  become: no
   community.kubernetes.helm:
     binary_path: /snap/bin/microk8s.helm3
     name: kubernetes-dashboard
+    namespace: default
     chart_ref: kubernetes-dashboard/kubernetes-dashboard
-    values: "{{ lookup('files', 'kubernetes-dashboard-values.yaml') | from_yaml }}"
+    values: "{{ lookup('file', 'kubernetes-dashboard-values.yaml') | from_yaml }}"
+    wait: yes
+
+- name: Copy Cluster Role Bindings for Kubernetes Dashboard to remote
+  copy:
+    src: kubernetes-dashboard-cluster-role-binding.yaml
+    dest: "/home/{{ ansible_user }}"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: 0664
 
 - name: Add Cluster Role Bindings for Kubernetes Dashboard
-  community.kubernetes.k8s:
-    definition: "{{ lookup('file', 'kubernetes-dashboard-cluster-role-binding.yaml') | from_yaml }}"
+  become: no
+  shell: "microk8s.kubectl apply -f /home/{{ ansible_user }}/kubernetes-dashboard-cluster-role-binding.yaml"
 
 - name: Add dashboard.local to local /etc/hosts
   local_action:
@@ -22,45 +34,65 @@
     line: "{{ ansible_host }} dashboard.local"
 
 - name: Add Cert Manager Helm repo
+  become: no
   community.kubernetes.helm_repository:
     binary_path: /snap/bin/microk8s.helm3
     name: jetstack
     repo_url: https://charts.jetstack.io
 
 - name: Deploy Cert Manager
+  become: no
   community.kubernetes.helm:
     binary_path: /snap/bin/microk8s.helm3
     name: cert-manager
+    namespace: default
     chart_ref: jetstack/cert-manager
     chart_version: "{{ cert_manager_version }}"
-    values: "{{ lookup('files', 'kubernetes-dashboard-values.yaml') | from_yaml }}"
+    values: "{{ lookup('file', 'cert-manager-values.yaml') | from_yaml }}"
+    wait: yes
+
+- name: Copy Cert Manager Cluster Issuer to remote
+  copy:
+    src: cluster-issuer.yaml
+    dest: "/home/{{ ansible_user }}"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: 0664
 
 - name: Deploy Cert Manager Cluster Issuer
-  community.kubernetes.k8s:
-    definition: "{{ lookup('file', 'cluster-issuer.yaml') | from_yaml }}"
+  become: no
+  shell: "microk8s.kubectl apply -f /home/{{ ansible_user }}/cluster-issuer.yaml"
 
 - name: Add Bitnami Helm repo
+  become: no
   community.kubernetes.helm_repository:
     binary_path: /snap/bin/microk8s.helm3
     name: bitnami
     repo_url: https://charts.bitnami.com/bitnami
 
 - name: Deploy MariaDB
+  become: no
   community.kubernetes.helm:
     binary_path: /snap/bin/microk8s.helm3
     name: mariadb
+    namespace: default
     chart_ref: bitnami/mariadb
-    values: "{{ lookup('files', 'mariadb-values.yaml') | from_yaml }}"
+    values: "{{ lookup('file', 'mariadb-values.yaml') | from_yaml }}"
+    wait: yes
 
 - name: Add Nexctloud Helm repo
+  become: no
   community.kubernetes.helm_repository:
     binary_path: /snap/bin/microk8s.helm3
     name: nextcloud
     repo_url: https://nextcloud.github.io/helm/
 
 - name: Deploy Nextcloud
+  become: no
   community.kubernetes.helm:
     binary_path: /snap/bin/microk8s.helm3
     name: nextcloud
+    namespace: default
     chart_ref: nextcloud/nextcloud
-    values: "{{ lookup('files', 'nextcloud-values.yaml') | from_yaml }}"
+    values: "{{ lookup('template', 'nextcloud-values.yaml') | from_yaml }}"
+    wait: yes

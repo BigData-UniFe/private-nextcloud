@@ -1,4 +1,0 @@
-- name: Down docker-compose.yaml
-  community.docker.docker_compose:
-    project_name: nextcloud
-    stopped: yes

@@ -3,9 +3,13 @@
     url: https://download.docker.com/linux/ubuntu/gpg
     state: present
 
+- name: Retrieve OS release name
+  shell: lsb_release -cs
+  register: release_name
+
 - name: Add apt repository for Docker
   apt_repository:
-    repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu xenial stable
+    repo: "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu {{ release_name.stdout }} stable"
     state: present
     filename: docker
 
@@ -15,13 +19,22 @@
       - docker-ce
       - docker-ce-cli
       - containerd.io
-    state: present
     update_cache: yes
 
 - name: Ensure Docker is running
   service:
     name: docker
     state: started
+
+- name: Install Docker Python client
+  become: no
+  pip:
+    name: docker
+
+- name: Install Docker Compose Python client
+  become: no
+  pip:
+    name: docker-compose
 
 - name: Retrive OS name
   shell: uname -s
@@ -33,12 +46,16 @@
 
 - name: Download and install Docker Compose
   get_url:
-    url: "https://github.com/docker/compose/releases/download/1.29.1/docker-compose-{{ os_name }}-{{ sys_arch }}"
+    url: "https://github.com/docker/compose/releases/download/1.29.1/docker-compose-{{ os_name.stdout }}-{{ sys_arch.stdout }}"
     dest: /usr/local/bin/docker-compose
-    mode: "0774"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: 0777
 
 - name: Create Docker Compose symlink
   file:
     src: /usr/local/bin/docker-compose
     dest: /usr/bin/docker-compose
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
     state: link
