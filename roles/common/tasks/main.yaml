@@ -1,4 +1,4 @@
-- name: Install Docker prerequisites
+- name: Install prerequisites
   apt:
     name:
       - apt-transport-https

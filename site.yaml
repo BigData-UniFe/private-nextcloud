@@ -4,6 +4,7 @@
     - never
     - docker
   roles:
+    - common
     - docker/install
     - docker/deploy
 
@@ -13,5 +14,6 @@
     - never
     - microk8s
   roles:
+    - common
     - microk8s/install
     - microk8s/deploy

@@ -6,6 +6,7 @@
   roles:
     - rollback/docker/deploy
     - rollback/docker/install
+    - rollback/common
 
 - hosts: nodes
   become: yes
@@ -15,3 +16,4 @@
   roles:
     - rollback/microk8s/deploy
     - rollback/microk8s/install
+    - rollback/common

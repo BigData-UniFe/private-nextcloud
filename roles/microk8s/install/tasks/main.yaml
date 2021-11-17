@@ -4,6 +4,23 @@
     classic: yes
     channel: "{{ microk8s_version }}"
 
+- name: "Adding user '{{ ansible_user }}' to microk8s group"
+  user: 
+    name: "{{ ansible_user }}"
+    groups: microk8s
+    append: yes
+
+- name: "Recursively change ownership of 'kube' directory to '{{ ansible_user }}'"
+  file:
+    path: ~/.kube
+    state: directory
+    recurse: yes
+    owner: "{{ ansible_user }}"
+
+- name: Wait microk8s ready
+  become: no
+  shell: microk8s.status --wait-ready
+
 - name: Enable microk8s dns, ingress, storage and helm3 addons
   become: no
   shell: microk8s.enable dns ingress storage helm3
